@@ -1,6 +1,12 @@
 name: Code Analysis
 on:
   pull_request:
+  push:
+    branches:
+      - main
+      - beta
+      - next
+      - "*.x" #Maintenance Release Branches
 
 jobs:
   sonarcloud:
