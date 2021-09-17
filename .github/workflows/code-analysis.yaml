@@ -18,4 +18,4 @@ jobs:
         with:
           args: >
             -Dsonar.organization=jasonluck
-            -Dsonar.projectKey=devsecops-practice
+            -Dsonar.projectKey=jasonluck_devsecops-practice
