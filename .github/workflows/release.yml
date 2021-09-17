@@ -1,0 +1,39 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+      - beta
+      - next
+      - "*.x" #Maintenance Release Branches
+  pull_request:
+    branches:
+      - main
+      - beta
+      - next
+      - "*.x" #Maintenance Release Branches
+    paths:
+      - ".releaserc.yaml"
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: "10.19"
+      - name: Release Dry Run
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --dry-run
+      - name: Release
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
