@@ -11,4 +11,8 @@ Estimate the cost change associated with infrastructure changes. This informatio
 
 ## Plan
 
+## Policy Enforcement
+This stage validates that the planned infrastructure changes meet all organizational infrastructure, network and security policies. Quality gates enforce that there are no policy violations before passing this stage. Recommended tools include:
+* [Open Policy Agent](https://www.openpolicyagent.org/docs/latest/terraform/)
+
 ## Apply
