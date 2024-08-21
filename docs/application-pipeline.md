@@ -1,5 +1,11 @@
 # Application Pipeline Stages
 
+Tools to develop your CI pipelines include:
+* [GitHub Actions]()
+* [AWS CodeDeploy]()
+* [Azure Devops]()
+* [Jenkins]()
+
 ## Compile
 In each section cover
  - Purpose
@@ -44,9 +50,25 @@ During this stage you want to package your application for deployment/installati
 
 
 ## Deployment
+The Deployment stage involves publishing your build output to a location where it can be tested. This can be very different depending our your artifacts, but there are a few common practices to consider when creating your deployment process:
+
+* Parameterize the deployment target. As project evolve, you will likely need to support multipl environments in which to deploy your artifacts. Make sure your process can take this information as parameter so its flexible enough to support this requirement.
+* Source control the deployment configuration. Your artifact is likely to need different deployment configurations depending on the deployment target. These configurations should be managed under source control to ensure consistency and repeatability.
+* Consider emphemeral deployments. If your platform and artifact supports it, consider using emphemeral deployment environments for your testing. This concept allows for easily testing multiple builds in parallel and increases the consistency of the test environment.
+
+Tools to support this process vary depending on your artifacts and platform, but some popular tools include:
+* [Helm](https://helm.sh/) - Deployment and package manager for Kubernetes
+* [Terraform](https://www.terraform.io/) - Configuration management tool for cloud infrastructure
+*
 
 ## Testing
+This is argueably the most important phase of your pipeline. Without good testing practices, you will never be able to reach a goal of continous delivery. Its these practices that build the stakeholder confidence that is required to get their approval for automated deployments to production.
 
+When testing your artifact you want to strive for consistency and reliability of your test cases. If, given the same input, they don't generate the same result EVERY time then stakeholders will lose confidence in these tests and they are completely worthloss. They will also cost your team precious time running down test failure causes when its just a poorly written test.
+
+Given this goal, some key things to consider when developing your testing process are:
+* Test Data Management - When data is needed by a test case, we need to make sure to seed that data every test execution. We don't want to assume the state of the needed data or rely on the state of data in some integrated system.
+*
 ### Integration Testing
 
 ### Performance Testing
