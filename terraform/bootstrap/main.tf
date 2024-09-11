@@ -100,8 +100,10 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
 }
 
 resource "aws_dynamodb_table" "terraform_lock_table" {
-  name     = var.dynamo_table_name
-  hash_key = "LockID"
+  name           = var.dynamo_table_name
+  hash_key       = "LockID"
+  read_capacity  = 1
+  write_capacity = 1
 
   attribute {
     name = "LockID"
