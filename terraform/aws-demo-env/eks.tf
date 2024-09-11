@@ -23,22 +23,47 @@ resource "aws_iam_role" "eks_admin" {
   })
 }
 
-resource "aws_iam_policy" "eks_admin" {
-  name        = "${local.eks_cluster_name}-administrator"
-  description = "Administrator access to ${local.eks_cluster_name} EKS Cluster"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "sts:AssumeRole",
-        ]
-        Effect   = "Allow"
-        Resource = "${aws_iam_role.eks_admin.arn}"
-      },
+data "aws_iam_policy_document" "eks_admin" {
+  statement {
+    actions = [
+      "sts:AssumeRole"
     ]
-  })
+    resources = [
+      aws_iam_role.eks_admin.arn
+    ]
+  }
+
+  statement {
+    actions = [
+      "eks:*"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "iam:PassRole"
+    ]
+    resources = [
+      "*"
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values = [
+        "eks.amazonaws.com"
+      ]
+    }
+  }
+
+}
+
+resource "aws_iam_policy" "eks_admin" {
+  name        = "${local.eks_cluster_name}-eks-cluster-administrator"
+  description = "Administrator access to ${local.eks_cluster_name} EKS Cluster"
+  policy      = data.aws_iam_policy_document.eks_admin.json
 }
 
 resource "aws_iam_group_policy_attachment" "eks_admin" {
