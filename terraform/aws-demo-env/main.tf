@@ -1,3 +1,28 @@
+###############################################################################
+# Demo Environment Configuration
+###############################################################################
+locals {
+  name              = "demo"
+  organization_name = "Veracity"
+
+  vpn_client_cidr = "10.1.0.0/16"
+  vpc_cidr        = "10.0.0.0/16"
+  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  #EKS
+  eks_cluster_name     = "demo"
+  node_group_name      = "demo"
+  cluster_min_size     = 0
+  cluster_max_size     = 3
+  cluster_desired_size = 3
+
+  #Applications
+  deploy_kubernetes_dashboard = true
+
+  tags = {
+  }
+}
+
 /*
  * The `aws` provider will use the various `AWS_*` environment variables expected
  * by the AWS CLI and SDKs. See;
@@ -24,22 +49,26 @@ provider "aws" {
   }
 }
 
-locals {
-  name              = "demo"
-  organization_name = "Veracity"
 
-  vpn_client_cidr = "10.1.0.0/16"
-  vpc_cidr        = "10.0.0.0/16"
-  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+data "aws_eks_cluster" "this" {
+  name = module.eks.cluster_name
+}
 
-  #EKS
-  eks_cluster_name     = "demo"
-  node_group_name      = "demo"
-  cluster_min_size     = 0
-  cluster_max_size     = 3
-  cluster_desired_size = 3
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks.cluster_name
+}
 
-  tags = {
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.this.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.this.token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.this.endpoint
+    token                  = data.aws_eks_cluster_auth.this.token
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority.0.data)
   }
 }
 
