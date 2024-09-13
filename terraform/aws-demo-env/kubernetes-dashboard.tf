@@ -1,5 +1,5 @@
 ###############################################################################
-# EKS Containers
+# Kubernetes Dashboard Application
 ###############################################################################
 
 resource "helm_release" "kubernetes_dashboard" {
@@ -14,7 +14,11 @@ resource "helm_release" "kubernetes_dashboard" {
 
   set {
     name  = "kong.enabled"
-    value = "false"
+    value = "true"
+  }
+  set {
+    name  = "kong.proxy.http.enabled"
+    value = "true"
   }
 }
 
@@ -46,9 +50,9 @@ resource "kubernetes_ingress_v1" "alb" {
           path_type = "Prefix"
           backend {
             service {
-              name = "kubernetes-dashboard-web"
+              name = "kubernetes-dashboard-kong-proxy"
               port {
-                number = 8000
+                number = 80
               }
             }
           }
@@ -56,4 +60,43 @@ resource "kubernetes_ingress_v1" "alb" {
       }
     }
   }
+}
+
+##############################################################################
+# Service Account for authenticating with dashboard
+##############################################################################
+resource "kubernetes_service_account_v1" "dashboard_admin" {
+  metadata {
+    name      = "dashboard-admin"
+    namespace = "kubernetes-dashboard"
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "dashboard_admin" {
+  metadata {
+    name = "dashboard-admin"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "dashboard-admin"
+    namespace = "kubernetes-dashboard"
+  }
+}
+
+resource "kubernetes_secret_v1" "dashboard_admin" {
+  metadata {
+    annotations = {
+      "kubernetes.io/service-account.name" = kubernetes_service_account_v1.dashboard_admin.metadata.0.name
+    }
+    name      = "dashboard-admin"
+    namespace = "kubernetes-dashboard"
+  }
+
+  type                           = "kubernetes.io/service-account-token"
+  wait_for_service_account_token = true
 }
