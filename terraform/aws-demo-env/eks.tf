@@ -89,7 +89,7 @@ module "eks" {
   create_cluster_security_group        = true
   subnet_ids                           = module.vpc.private_subnets
   cluster_endpoint_private_access      = true
-  cluster_endpoint_public_access       = false
+  cluster_endpoint_public_access       = true
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
   cluster_security_group_additional_rules = {

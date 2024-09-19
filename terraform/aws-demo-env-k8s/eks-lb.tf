@@ -13,12 +13,12 @@
 module "lb_role" {
   source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name                              = "${local.eks_cluster_name}-eks-lb"
+  role_name                              = "${local.cluster_name}-eks-lb"
   attach_load_balancer_controller_policy = true
 
   oidc_providers = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = local.cluster_oidc_arn
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
     }
   }
@@ -55,7 +55,7 @@ resource "helm_release" "alb-controller" {
 
   set {
     name  = "vpcId"
-    value = module.vpc.vpc_id
+    value = local.vpc_id
   }
 
   set {
@@ -75,6 +75,6 @@ resource "helm_release" "alb-controller" {
 
   set {
     name  = "clusterName"
-    value = data.aws_eks_cluster.this.name
+    value = local.cluster_name
   }
 }

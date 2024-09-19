@@ -23,7 +23,12 @@ resource "helm_release" "kubernetes_dashboard" {
 }
 
 # Create ALB for Kubernets Dashboard
+# There seems to be a bug around destroying this rresource
+# https://github.com/hashicorp/terraform-provider-kubernetes/issues/2335
+# If destroy hangs on this resource, manually remove it from state using:
+# terraform state rm "kubernetes_ingress_v1.alb[0]"
 resource "kubernetes_ingress_v1" "alb" {
+  count = local.deploy_kubernetes_dashboard ? 1 : 0
   depends_on = [
     helm_release.alb-controller,
     helm_release.kubernetes_dashboard
@@ -34,7 +39,7 @@ resource "kubernetes_ingress_v1" "alb" {
     annotations = {
       "kubernetes.io/ingress.class"                = "alb"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
-      "alb.ingress.kubernetes.io/group.name"       = local.name
+      "alb.ingress.kubernetes.io/group.name"       = local.cluster_name
       "alb.ingress.kubernetes.io/scheme"           = "internal"
       "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 80}]"
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
@@ -66,6 +71,7 @@ resource "kubernetes_ingress_v1" "alb" {
 # Service Account for authenticating with dashboard
 ##############################################################################
 resource "kubernetes_service_account_v1" "dashboard_admin" {
+  count = local.deploy_kubernetes_dashboard ? 1 : 0
   metadata {
     name      = "dashboard-admin"
     namespace = "kubernetes-dashboard"
@@ -73,6 +79,7 @@ resource "kubernetes_service_account_v1" "dashboard_admin" {
 }
 
 resource "kubernetes_cluster_role_binding" "dashboard_admin" {
+  count = local.deploy_kubernetes_dashboard ? 1 : 0
   metadata {
     name = "dashboard-admin"
   }
@@ -89,9 +96,10 @@ resource "kubernetes_cluster_role_binding" "dashboard_admin" {
 }
 
 resource "kubernetes_secret_v1" "dashboard_admin" {
+  count = local.deploy_kubernetes_dashboard ? 1 : 0
   metadata {
     annotations = {
-      "kubernetes.io/service-account.name" = kubernetes_service_account_v1.dashboard_admin.metadata.0.name
+      "kubernetes.io/service-account.name" = kubernetes_service_account_v1.dashboard_admin[0].metadata.0.name
     }
     name      = "dashboard-admin"
     namespace = "kubernetes-dashboard"
