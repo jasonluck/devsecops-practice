@@ -560,3 +560,10 @@ output "eks_oidc_provider_arn" {
   description = "The ARN of the OIDC Provider"
   value       = module.eks.oidc_provider_arn
 }
+
+# VPN
+output "vpn_client_full_configuration" {
+  description = "Outputs the complete client VPN configuration including authentication certificates"
+  value       = module.client_vpn.full_client_configuration
+  sensitive   = true
+}
