@@ -36,7 +36,3 @@ To access the VPN that is setup by this project, you will need your favorite Ope
 terraform output --raw vpn_client_full_configuration > demo-vpn.ovpn
 ```
 Import this configuration file into your VPN client and you are ready to connect to the VPN.
-
-## Granting AWS Console Access
-
-## Accessing Kubernetes Dashboard
